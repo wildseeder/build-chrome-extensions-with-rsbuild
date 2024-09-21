@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Chrome Extension Zero",
+  "description": "An example Chrome extension built with React and Rsbuild.",
+  "background": {
+    "service_worker": "static/js/background.js"
+  },
+  "action": {
+    "default_title": "Chrome Extension Zero"
+  },
+  "icons": {
+    "128": "icon.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*/*"],
+      "js": ["static/js/contentScript.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["*"],
+      "matches": ["https://*/*"]
+    }
+  ]
+}

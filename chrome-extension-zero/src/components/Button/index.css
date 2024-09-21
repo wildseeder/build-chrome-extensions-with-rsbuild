@@ -1,0 +1,15 @@
+.primary-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 1rem 2rem;
+  font-size: 16px;
+  color: black;
+  background-color: white;
+  border-color: black;
+}
+
+.primary-btn img {
+  width: 1em;
+  height: 1em;
+}
