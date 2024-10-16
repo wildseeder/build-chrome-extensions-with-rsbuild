@@ -307,22 +307,17 @@ import { ReactNode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import Button from '../components/Button';
 
-const container = appendComponent(document.body, <Root />);
-Object.assign(container.style, {
-  position: 'fixed',
-  top: '0',
-  left: '0',
-  zIndex: '9999',
-} as CSSStyleDeclaration);
+document.addEventListener('DOMContentLoaded', () => {
+  const container = appendComponent(document.body, <Root />);
+  Object.assign(container.style, {
+    position: 'fixed',
+    top: '0',
+    left: '0',
+    zIndex: '9999',
+  } as CSSStyleDeclaration);
+});
 
-function Root() {
-  const [count, setCount] = useState(0);
-  return (
-    <Button count={count} onClick={() => setCount(count+1)} />
-  );
-}
-
-export function appendComponent(parent: HTMLElement, component: ReactNode): HTMLElement {
+function appendComponent(parent: HTMLElement, component: ReactNode): HTMLElement {
   const container = document.createElement('div');
   const shadowRoot = container.attachShadow({ mode: 'open' });
   parent.appendChild(container);
@@ -337,6 +332,13 @@ export function appendComponent(parent: HTMLElement, component: ReactNode): HTML
   createRoot(componentRoot).render(component);
 
   return container;
+}
+
+function Root() {
+  const [count, setCount] = useState(0);
+  return (
+    <Button count={count} onClick={() => setCount(count+1)} />
+  );
 }
 ```
 
