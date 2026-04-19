@@ -15,7 +15,8 @@
   "content_scripts": [
     {
       "matches": ["https://*/*"],
-      "js": ["static/js/contentScript.js"]
+      "js": ["static/js/contentScript.js"],
+      "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [

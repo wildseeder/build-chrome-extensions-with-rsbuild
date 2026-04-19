@@ -2,9 +2,9 @@
 
 [English](./README.md) | 简体中文
 
-现在开发 Chrome 扩展程序，要想得到包含 HMR 等特性的丝滑开发体验，已经不用再去找脚手架或专门的魔改方案了，用 Rsbuild 简单配置一下足矣，我认为这是目前最佳的构建方案。
+这个仓库提供了一个使用 Rsbuild 构建的 Chrome 扩展程序的示例项目，展示了如何使用 Rsbuild 来构建 Chrome 扩展程序，并且在开发过程中获得 HMR 等特性带来的丝滑体验。
 
-[Rspack](https://rspack.dev) 不久前发布了正式版本，顾名思义，这是一个用 Rust 编写的用以替代 webpack 的高性能构建工具。[Rsbuild](https://rsbuild.dev) 是它的上层封装，大大简化了配置。下面我举一个例子，看看使用 Rsbuild 构建 Chrome 扩展程序到底能有多简单。
+[Rspack](https://rspack.dev) 顾名思义，这是一个用 Rust 编写的用以替代 webpack 的高性能构建工具。[Rsbuild](https://rsbuild.dev) 是它的上层封装，大大简化了配置。下面我举一个例子，看看使用 Rsbuild 构建 Chrome 扩展程序到底能有多简单。
 
 这里假设你已经知道如何开发 Chrome 扩展程序，所以只展示使用 Rsbuild 的不同点，不再赘述基础知识。
 
@@ -16,21 +16,19 @@ cd chrome-extension-zero
 yarn
 ```
 
-得到如下的文件目录结构，很精简：
+得到如下的文件目录结构（已忽略无关的文件）：
 
 ```text
-├── node_modules
+├── public
+│   └── favicon.png
 ├── src
 │   ├── App.css
 │   ├── App.tsx
 │   ├── env.d.ts
 │   └── index.tsx
-├── .gitignore
-├── README.md
 ├── package.json
 ├── rsbuild.config.ts
-├── tsconfig.json
-└── yarn.lock
+└── tsconfig.json
 ```
 
 这时已经可以跑起来了，执行 `yarn dev` 即可看到页面。接下来要把它改成 Chrome 扩展程序，这个扩展程序只做一件事：当用户点击扩展图标时，打开内置页面。
@@ -40,13 +38,29 @@ yarn
 安装 TS 类型包：
 
 ```bash
+echo 'nodeLinker: node-modules' > .yarnrc.yml
 yarn add -D @types/chrome @types/node
 ```
 
-把 `src` 内的文件移动到 `src/main` 里，然后创建 `src/background/index.ts` 和 `public/manifest.json`：
+修改 `tsconfig.json`，添加 `chrome` 和 `node` 的类型：
+
+```diff
+{
+  "compilerOptions": {
+    ...
+    "types": [
++     "chrome",
++     "node"
+    ],
+    ...
+  },
+  ...
+}
+```
+
+删除 `public/favicon.png`，把 `src` 内的文件移动到 `src/main` 里，然后创建 `src/background/index.ts` 和 `public/manifest.json`：
 
 ```text
-├── node_modules
 ├── public
 │   └── manifest.json
 ├── src
@@ -57,12 +71,9 @@ yarn add -D @types/chrome @types/node
 │       ├── App.tsx
 │       ├── env.d.ts
 │       └── index.tsx
-├── .gitignore
-├── README.md
 ├── package.json
 ├── rsbuild.config.ts
-├── tsconfig.json
-└── yarn.lock
+└── tsconfig.json
 ```
 
 修改 `src/background/index.ts` 的内容：
@@ -86,7 +97,7 @@ chrome.action.onClicked.addListener(() => {
   },
   "action": {
     "default_title": "Chrome Extension Zero"
-  },
+  }
 }
 ```
 
@@ -96,7 +107,8 @@ chrome.action.onClicked.addListener(() => {
 import { defineConfig } from '@rsbuild/core';
 import { pluginReact } from '@rsbuild/plugin-react';
 
-// 此处暂时不用区分开发/正式环境
+// Docs: https://rsbuild.rs/config/
+// No need to distinguish development/production for now.
 // const isProd = process.env.NODE_ENV === 'production';
 const port = 3000;
 
@@ -204,7 +216,8 @@ export default defineConfig({
 + "content_scripts": [
 +   {
 +     "matches": ["https://*/*"],
-+     "js": ["static/js/contentScript.js"]
++     "js": ["static/js/contentScript.js"],
++     "run_at": "document_start"
 +   }
 + ],
 + "web_accessible_resources": [
@@ -219,7 +232,6 @@ export default defineConfig({
 添加对应的文件：
 
 ```diff
- ├── node_modules
  ├── public
  │   └── manifest.json
  ├── src
@@ -238,15 +250,12 @@ export default defineConfig({
  │       ├── App.tsx
  │       ├── env.d.ts
  │       └── index.tsx
- ├── .gitignore
- ├── README.md
  ├── package.json
  ├── rsbuild.config.ts
- ├── tsconfig.json
- └── yarn.lock
+ └── tsconfig.json
 ```
 
-`src/components/env.d.ts` 是 `src/main/env.d.ts` 的拷贝。
+其中，`src/components/env.d.ts` 是 `src/main/env.d.ts` 的拷贝。
 
 修改 `src/components/Button/index.tsx` 的内容：
 

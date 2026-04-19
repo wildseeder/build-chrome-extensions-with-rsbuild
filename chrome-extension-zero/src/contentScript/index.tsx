@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import Button from '../components/Button';
 

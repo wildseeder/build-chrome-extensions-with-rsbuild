@@ -2,13 +2,13 @@
 
 English | [简体中文](./README.zh-CN.md)
 
-Nowadays, if you're aiming for a smooth Chrome extension development experience complete with features like HMR, there's no need to hunt for scaffolding or custom solutions. Rsbuild, with its simple configuration, is more than enough. In my opinion, it's currently the best build tool for the job.
+This repository provides a sample Chrome extension project built with Rsbuild. It shows how to use Rsbuild to build Chrome extensions and enjoy a smooth development experience with features like HMR.
 
-[Rspack](https://rspack.dev) recently released its official version. As the name suggests, it's a high-performance build tool written in Rust, designed to replace webpack. [Rsbuild](https://rsbuild.dev) serves as a higher-level wrapper around Rspack, greatly simplifying the configuration process. Let's dive into an example to see just how effortless it is to build a Chrome extension with Rsbuild.
+[Rspack](https://rspack.dev), as its name suggests, is a high-performance build tool written in Rust as an alternative to webpack. [Rsbuild](https://rsbuild.dev) is an upper-layer wrapper around it that greatly simplifies configuration. Let’s walk through an example to see how easy building a Chrome extension with Rsbuild can be.
 
-Assuming you're already familiar with Chrome extension development, we'll focus solely on how Rsbuild is different, skipping the basics.
+This guide assumes you already know how to build Chrome extensions, so it focuses only on what is different when using Rsbuild.
 
-Create a project named chrome-extension-zero based on React and TS, then install the dependencies:
+Create a React + TypeScript project named `chrome-extension-zero` and install dependencies:
 
 ```bash
 yarn create rsbuild -d chrome-extension-zero -t react-ts
@@ -16,37 +16,51 @@ cd chrome-extension-zero
 yarn
 ```
 
-You'll get the following file structure, which is quite concise:
+You should get the following structure (irrelevant files omitted):
 
 ```text
-├── node_modules
+├── public
+│   └── favicon.png
 ├── src
 │   ├── App.css
 │   ├── App.tsx
 │   ├── env.d.ts
 │   └── index.tsx
-├── .gitignore
-├── README.md
 ├── package.json
 ├── rsbuild.config.ts
-├── tsconfig.json
-└── yarn.lock
+└── tsconfig.json
 ```
 
-At this point, you can already run the project. Execute `yarn dev` and you'll see the page. Next, let's transform it into a Chrome extension. This extension will do one simple thing: when the user clicks the extension icon, it opens the built-in page.
+At this point, you can already run it. Execute `yarn dev` and you’ll see the page. Next, convert it into a Chrome extension. This extension does one thing: when the user clicks the extension icon, it opens a built-in page.
 
-Modify `package.json` to remove the `--open` parameter from the `dev` command, as we don't need to automatically open the page when developing a Chrome extension.
+Update `package.json` and remove the `--open` argument from the `dev` command, because you don’t need to auto-open a page when developing a Chrome extension.
 
-Install the TS type packages:
+Install TypeScript type packages:
 
 ```bash
+echo 'nodeLinker: node-modules' > .yarnrc.yml
 yarn add -D @types/chrome @types/node
 ```
 
-Move the files within `src` to `src/main`, then create `src/background/index.ts` and `public/manifest.json`:
+Update `tsconfig.json` to include `chrome` and `node` types:
+
+```diff
+{
+  "compilerOptions": {
+    ...
+    "types": [
++     "chrome",
++     "node"
+    ],
+    ...
+  },
+  ...
+}
+```
+
+Delete `public/favicon.png`, move files in `src` into `src/main`, then create `src/background/index.ts` and `public/manifest.json`:
 
 ```text
-├── node_modules
 ├── public
 │   └── manifest.json
 ├── src
@@ -57,15 +71,12 @@ Move the files within `src` to `src/main`, then create `src/background/index.ts`
 │       ├── App.tsx
 │       ├── env.d.ts
 │       └── index.tsx
-├── .gitignore
-├── README.md
 ├── package.json
 ├── rsbuild.config.ts
-├── tsconfig.json
-└── yarn.lock
+└── tsconfig.json
 ```
 
-Modify the contents of `src/background/index.ts`:
+Update `src/background/index.ts`:
 
 ```ts
 chrome.action.onClicked.addListener(() => {
@@ -73,7 +84,7 @@ chrome.action.onClicked.addListener(() => {
 });
 ```
 
-Modify the contents of `public/manifest.json`:
+Update `public/manifest.json`:
 
 ```json
 {
@@ -86,17 +97,18 @@ Modify the contents of `public/manifest.json`:
   },
   "action": {
     "default_title": "Chrome Extension Zero"
-  },
+  }
 }
 ```
 
-Modify the configuration within `rsbuild.config.ts`. For detailed configuration explanations, please refer to the official Rsbuild documentation:
+Update `rsbuild.config.ts` as follows. For details, refer to the official Rsbuild documentation:
 
 ```ts
 import { defineConfig } from '@rsbuild/core';
 import { pluginReact } from '@rsbuild/plugin-react';
 
-// No need to distinguish between development and production environments for now
+// Docs: https://rsbuild.rs/config/
+// No need to distinguish development/production for now.
 // const isProd = process.env.NODE_ENV === 'production';
 const port = 3000;
 
@@ -149,15 +161,15 @@ export default defineConfig({
 });
 ```
 
-Finally, execute `yarn dev`. In the `chrome://extensions` page, load the `dist` directory, and you can happily start developing.
+Finally, run `yarn dev`, load the `dist` directory on `chrome://extensions`, and you can start developing happily.
 
-There's a minor unresolved issue: each hot update adds a few hot-update files, and these files can't be ignored during `writeToDisk`. This leads to HMR failure and automatic fallback to liveReload. Fortunately, these files are very small, so it's tolerable.
+There is one unresolved minor drawback: each hot update generates a few `hot-update` files, and these files cannot be ignored when `writeToDisk` is enabled. This causes HMR to fail and automatically fall back to liveReload. Fortunately, these files are tiny and generally tolerable.
 
-Is the example too simple? Let's try something more complex, like a translation tool that modifies web pages to display its own UI components. The trickiest part of such requirements is injecting the extension's UI components into the target page through content scripts. However, like background scripts, content scripts aren't easy to do HMR with, requiring a reload for every change. Debugging UI without HMR is quite painful, so we should separate the UI components to enable independent debugging, minimizing the logic within content scripts.
+Too simple? Let’s try something more practical, such as helper tools for text selection translation, where you need to modify pages and render your own UI components inside them. The most troublesome part is injecting extension UI into target pages through a content script. Content scripts, like background scripts, are not HMR-friendly and require reloads for each change. Debugging UI without HMR is painful, so we should extract UI components so they can be debugged independently, and keep content-script logic as small as possible.
 
-Next, let's further refine the example to add a counter button to each webpage.
+Next, let’s improve the example by adding a counter button to every webpage.
 
-Modify `rsbuild.config.ts` to add two new entries: `components` and `contentScript`:
+Update `rsbuild.config.ts` by adding `components` and `contentScript` entries:
 
 ```diff
 export default defineConfig({
@@ -195,7 +207,7 @@ export default defineConfig({
 });
 ```
 
-Modify the contents of `public/manifest.json`:
+Update `public/manifest.json`:
 
 ```diff
 {
@@ -204,7 +216,8 @@ Modify the contents of `public/manifest.json`:
 + "content_scripts": [
 +   {
 +     "matches": ["https://*/*"],
-+     "js": ["static/js/contentScript.js"]
++     "js": ["static/js/contentScript.js"],
++     "run_at": "document_start"
 +   }
 + ],
 + "web_accessible_resources": [
@@ -219,7 +232,6 @@ Modify the contents of `public/manifest.json`:
 Add the corresponding files:
 
 ```diff
- ├── node_modules
  ├── public
  │   └── manifest.json
  ├── src
@@ -238,17 +250,14 @@ Add the corresponding files:
  │       ├── App.tsx
  │       ├── env.d.ts
  │       └── index.tsx
- ├── .gitignore
- ├── README.md
  ├── package.json
  ├── rsbuild.config.ts
- ├── tsconfig.json
- └── yarn.lock
+ └── tsconfig.json
 ```
 
-`src/components/env.d.ts` is a copy of `src/main/env.d.ts`.
+Here, `src/components/env.d.ts` is copied from `src/main/env.d.ts`.
 
-Modify the contents of `src/components/Button/index.tsx`:
+Update `src/components/Button/index.tsx`:
 
 ```tsx
 import './index.css';
@@ -267,7 +276,7 @@ export default function Button({ count, onClick }: Props) {
 }
 ```
 
-Modify the contents of `src/components/Button/index.css`:
+Update `src/components/Button/index.css`:
 
 ```css
 .primary-btn {
@@ -279,9 +288,9 @@ Modify the contents of `src/components/Button/index.css`:
 }
 ```
 
-Managing styles within UI components is exactly the same as usual. If you prefer Tailwind CSS, you can follow the Rsbuild documentation to integrate it. However, when you need to use the extension's own resources like images, you'll need to obtain the URL through `chrome.runtime.getURL('xxx')`.
+Style management in UI components is exactly the same as usual. If you want Tailwind CSS, follow the Rsbuild docs to integrate it. But when using extension-owned assets (such as images), you need to get the URL through `chrome.runtime.getURL('xxx')`.
 
-Modify the contents of `src/components/index.tsx`:
+Update `src/components/index.tsx`:
 
 ```tsx
 import { createRoot } from 'react-dom/client';
@@ -298,9 +307,9 @@ function Preview() {
 }
 ```
 
-This serves as the preview entry point for UI components. During development, we can open `chrome-extension://<ID>/components.html` to debug UI components. Both `components` and `main` support HMR. Remember not to use `http://localhost:3000/components`, as this differs from the target context of the components (content script).
+This acts as the preview entry for UI components. During development, you can open `chrome-extension://<ID>/components.html` to debug UI components. `components` supports HMR just like `main`. Do not use `http://localhost:3000/components`, because it differs from the component’s target context (content script).
 
-Modify the contents of `src/contentScript/index.tsx`:
+Update `src/contentScript/index.tsx`:
 
 ```tsx
 import { ReactNode, useState } from 'react';
@@ -342,6 +351,7 @@ function Root() {
 }
 ```
 
-With the UI separated, the logic within the content script becomes quite simple. The above code, upon each execution, inserts the counter button in the form of a Shadow DOM, positioning it at the top-left corner of the page.
+After extracting UI components, content-script logic becomes very simple. Each time the code runs, it injects a counter button in Shadow DOM and positions it at the top-left corner of the page.
 
-The complete source code for the example project: [chrome-extension-zero](https://github.com/wildseeder/build-chrome-extensions-with-rsbuild/tree/master/chrome-extension-zero).
+Complete example source code: [chrome-extension-zero](https://github.com/wildseeder/build-chrome-extensions-with-rsbuild/tree/master/chrome-extension-zero).
+

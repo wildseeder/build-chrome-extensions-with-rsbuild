@@ -1,6 +1,9 @@
 import { defineConfig } from '@rsbuild/core';
 import { pluginReact } from '@rsbuild/plugin-react';
 
+// Docs: https://rsbuild.rs/config/
+
+// No need to distinguish development/production for now.
 // const isProd = process.env.NODE_ENV === 'production';
 const port = 3000;
 
@@ -33,7 +36,7 @@ export default defineConfig({
         },
       },
       html: {
-        title: '',
+        title: 'chrome-extension-zero',
       },
       output: {
         target: 'web',
