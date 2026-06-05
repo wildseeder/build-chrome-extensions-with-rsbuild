@@ -116,8 +116,7 @@ export default defineConfig({
   dev: {
     client: {
       port,
-      host: '0.0.0.0',
-      protocol: 'ws',
+      host: 'localhost',
     },
     writeToDisk: true,
   },

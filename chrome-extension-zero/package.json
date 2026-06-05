@@ -8,16 +8,16 @@
     "dev": "rsbuild dev"
   },
   "dependencies": {
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   },
   "devDependencies": {
-    "@rsbuild/core": "^1.7.1",
-    "@rsbuild/plugin-react": "^1.4.2",
-    "@types/chrome": "^0.1.40",
-    "@types/node": "^25.6.0",
-    "@types/react": "^19.2.7",
+    "@rsbuild/core": "^2.0.11",
+    "@rsbuild/plugin-react": "^2.0.1",
+    "@types/chrome": "^0.1.42",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.16",
     "@types/react-dom": "^19.2.3",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.3"
   }
 }
